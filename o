@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Serwis backendu (Twoja aplikacja Python)
+  backend:
+    build: .
+    container_name: backend_app
+    networks:
+      - app_network
+    # Ten serwis wewnętrznie działa na 8080 i nie musi być
+    # wystawiony na zewnątrz (hosta), bo Nginx się z nim połączy
+
+  # Serwis frontendu (Nginx jako reverse proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      # TUTAJ JEST ZMIANA:
+      # Mapujemy port 8080 na Twojej maszynie AWS (Host)
+      # na port 80 wewnątrz kontenera Nginx
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+# Definicja wirtualnej sieci
+networks:
+  app_network:
+    driver: bridg
